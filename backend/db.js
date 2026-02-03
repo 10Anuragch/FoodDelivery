@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+
+import mongoose from "mongoose";
+
 const mongoURI = 'mongodb+srv://anurag12:ac2005ch@cluster0.8nbnmiz.mongodb.net/gofoodmern?retryWrites=true&w=majority';
 
 async function connectDB() {
@@ -23,4 +25,4 @@ async function connectDB() {
   }
 }
 
-module.exports = connectDB;
+export default connectDB;

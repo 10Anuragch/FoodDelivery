@@ -1,3 +1,4 @@
+
 import React from 'react';
 import img1 from '../Images/img1.jpg';
 import img2 from '../Images/img2.jpg';
@@ -5,7 +6,7 @@ import img3 from '../Images/img3.jpg';
 
 export default function Carousel({ search, setSearch }) {
   const handleSubmit = (e) => {
-    e.preventDefault(); // prevent page reload
+    e.preventDefault();
   };
 
   return (
@@ -18,9 +19,9 @@ export default function Carousel({ search, setSearch }) {
         style={{ maxHeight: '600px', overflow: 'hidden', paddingTop: '100px' }}
       >
 
-        {/* Search Bar Overlay */}
+       
         <div
-          className="carousel-caption d-flex justify-content-center align-items-center"
+          className="carousel-caption d-flex justify-content-center align-items-center animate__animated animate__fadeInDown"
           style={{
             zIndex: 2,
             bottom: '10%',
@@ -36,13 +37,13 @@ export default function Carousel({ search, setSearch }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <button className="btn btn-success text-white" type="submit">
+            <button className="btn btn-success text-white btn-animated" type="submit">
               Search
             </button>
           </form>
         </div>
 
-        {/* Carousel Slides */}
+       
         <div className="carousel-inner" id="carousel">
           <div className="carousel-item active" data-bs-interval="3000">
             <img
@@ -51,7 +52,8 @@ export default function Carousel({ search, setSearch }) {
               style={{
                 height: '500px',
                 objectFit: 'cover',
-                filter: 'brightness(50%)',
+                filter: 'brightness(45%)',
+                transition: 'transform .8s ease'
               }}
               alt="Slide 1"
             />
@@ -63,7 +65,8 @@ export default function Carousel({ search, setSearch }) {
               style={{
                 height: '500px',
                 objectFit: 'cover',
-                filter: 'brightness(50%)',
+                filter: 'brightness(45%)',
+                transition: 'transform .8s ease'
               }}
               alt="Slide 2"
             />
@@ -75,14 +78,15 @@ export default function Carousel({ search, setSearch }) {
               style={{
                 height: '500px',
                 objectFit: 'cover',
-                filter: 'brightness(50%)',
+                filter: 'brightness(45%)',
+                transition: 'transform .8s ease'
               }}
               alt="Slide 3"
             />
           </div>
         </div>
 
-        {/* Carousel Controls */}
+       
         <button
           className="carousel-control-prev"
           type="button"

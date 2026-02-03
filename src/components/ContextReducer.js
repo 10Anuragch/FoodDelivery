@@ -1,10 +1,11 @@
+
 import React, { useReducer, useContext, createContext } from 'react';
 
-// Create contexts
+
 const CartStateContext = createContext();
 const CartDispatchContext = createContext();
 
-// Reducer function
+
 const reducer = (state, action) => {
     switch (action.type) {
         case "ADD":
@@ -13,43 +14,63 @@ const reducer = (state, action) => {
                 {
                     id: action.id,
                     name: action.name,
-                    qty: action.qty,
+                    qty: parseInt(action.qty, 10),
                     size: action.size,
                     price: action.price,
                     img: action.img
                 }
             ];
 
-        case "REMOVE":
+        case "REMOVE": {
             const updatedArr = [...state];
             updatedArr.splice(action.index, 1);
             return updatedArr;
+        }
 
         case "DROP":
-            return []; // empty the cart
+            return [];
 
-        case "UPDATE":
+        case "UPDATE": {
             const updatedState = [...state];
-            const itemIndex = updatedState.findIndex(item => item.id === action.id && item.size === action.size);
+
+            const findIndex = (it) => {
+                if (action.size !== undefined && action.size !== null && action.size !== "") {
+                    return it.id === action.id && it.size === action.size;
+                }
+                return it.id === action.id;
+            };
+            const itemIndex = updatedState.findIndex(findIndex);
 
             if (itemIndex !== -1) {
                 const item = updatedState[itemIndex];
+                const addedQty = parseInt(action.qty, 10);
+                const addedPrice = Number(action.price);
                 updatedState[itemIndex] = {
                     ...item,
-                    qty: item.qty + parseInt(action.qty),
-                    price: item.price + action.price
+                    qty: item.qty + addedQty,
+                    price: item.price + addedPrice
                 };
+            } else {
+                // If an update couldn't find an existing item, add it instead (robust fallback)
+                updatedState.push({
+                    id: action.id,
+                    name: action.name || "Item",
+                    qty: parseInt(action.qty || 1, 10),
+                    size: action.size || "",
+                    price: action.price || 0,
+                    img: action.img || ""
+                });
             }
 
             return updatedState;
+        }
 
         default:
-            console.log("Error in Reducer: Unknown action type");
+            console.error("Error in Reducer: Unknown action type", action.type);
             return state;
     }
 };
 
-// Provider component
 export const CartProvider = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, []);
 
@@ -62,6 +83,5 @@ export const CartProvider = ({ children }) => {
     );
 };
 
-// Custom hooks with fallback
 export const useCart = () => useContext(CartStateContext) || [];
 export const useDispatchCart = () => useContext(CartDispatchContext);

@@ -1,198 +1,546 @@
-const express = require('express')
-const User = require('../models/User')
-const Order = require('../models/Orders')
-const router = express.Router()
-const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs')
-var jwt = require('jsonwebtoken');
-const axios = require('axios')
-const fetch = require('../middleware/fetchdetails');
-const jwtSecret = "HaHa"
-// var foodItems= require('../index').foodData;
-// require("../index")
-//Creating a user and storing data to MongoDB Atlas, No Login Requiered`
-router.post('/createuser', [
-    body('email').isEmail(),
-    body('password').isLength({ min: 8 }),//password of length atleast 8
-    body('name').isLength({ min: 3 })//length of name must be atleast 3
-], async (req, res) => {
-    let success = false
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ success, errors: errors.array() })
-    }
-    // console.log(req.body)
-    // let user = await User.findOne({email:req.body.email})
-    const salt = await bcrypt.genSalt(10)
-    let securePass = await bcrypt.hash(req.body.password, salt);
-    try {
-        await User.create({
-            name: req.body.name,
-            // password: req.body.password,  first write this and then use bcryptjs
-            password: securePass,
-            email: req.body.email,
-            location: req.body.location
-        }).then(user => {
-            const data = {
-                user: {
-                    id: user.id
-                }
-            }
-            const authToken = jwt.sign(data, jwtSecret);
-            success = true
-            res.json({ success, authToken })
-        })
-            .catch(err => {
-                console.log(err);
-                res.json({ error: "Please enter a unique value." })
-            })
-    } catch (error) {
-        console.error(error.message)
-    }
-})
 
-// Authentication a User, No login Requiered
-router.post('/login', [
-    body('email', "Enter a Valid Email").isEmail(),
-    body('password', "Password cannot be blank").exists(),
-], async (req, res) => {
-    let success = false
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
-    }
+// // import express from "express";
+// // import User from "../models/User.js";
+// // import Order from "../models/Orders.js";
+// // import { body, validationResult } from "express-validator";
+// // import bcrypt from "bcryptjs";
+// // import jwt from "jsonwebtoken";
+// // import axios from "axios";
+// // import fetch from "../middleware/fetchdetails.js";
 
-    //if username(email) and password are matched with  database then login successfully
-    const { email, password } = req.body;
-    try {
-        let user = await User.findOne({ email });  //{email:email} === {email}
-        if (!user) {
-            return res.status(400).json({ success, error: "Try Logging in with correct credentials" });
-        }
+// // const router = express.Router();
+// // const jwtSecret = "HaHa";
 
-        const pwdCompare = await bcrypt.compare(password, user.password); // this return true false.
-        if (!pwdCompare) {
-            return res.status(400).json({ success, error: "Try Logging in with correct credentials" });
-        }
-        const data = {
-            user: {
-                id: user.id
-            }
-        }
-        success = true;
-        const authToken = jwt.sign(data, jwtSecret);
-        res.json({ success, authToken })
+// // router.post('/createuser', [
+// //   body('email').isEmail(),
+// //   body('password').isLength({ min: 8 }),
+// //   body('name').isLength({ min: 3 })
+// // ], async (req, res) => {
+// //   let success = false;
+// //   const errors = validationResult(req);
+// //   if (!errors.isEmpty()) return res.status(400).json({ success, errors: errors.array() });
 
+// //   try {
+// //     const salt = await bcrypt.genSalt(10);
+// //     const securePass = await bcrypt.hash(req.body.password, salt);
 
-    } catch (error) {
-        console.error(error.message)
-        res.send("Server Error")
-    }
-})
+// //     const user = await User.create({
+// //       name: req.body.name,
+// //       password: securePass,
+// //       email: req.body.email,
+// //       location: req.body.location
+// //     });
 
-// Get logged in User details, Login Required.
-router.post('/getuser', fetch, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const user = await User.findById(userId).select("-password") // -password will not pick password from db.
-        res.send(user)
-    } catch (error) {
-        console.error(error.message)
-        res.send("Server Error")
+// //     const authToken = jwt.sign({ user: { id: user.id } }, jwtSecret);
+// //     success = true;
+// //     res.json({ success, authToken });
 
-    }
-})
-// Get logged in User details, Login Required.
-router.post('/getlocation', async (req, res) => {
-    try {
-        let lat = req.body.latlong.lat
-        let long = req.body.latlong.long
-        console.log(lat, long)
-        let location = await axios
-            .get("https://api.opencagedata.com/geocode/v1/json?q=" + lat + "+" + long + "&key=74c89b3be64946ac96d777d08b878d43")
-            .then(async res => {
-                // console.log(`statusCode: ${res.status}`)
-                console.log(res.data.results)
-                // let response = stringify(res)
-                // response = await JSON.parse(response)
-                let response = res.data.results[0].components;
-                console.log(response)
-                let { village, county, state_district, state, postcode } = response
-                return String(village + "," + county + "," + state_district + "," + state + "\n" + postcode)
-            })
-            .catch(error => {
-                console.error(error)
-            })
-        res.send({ location })
+// //   } catch (error) {
+// //     console.error(error);
+// //     res.status(400).json({ error: "Please enter a unique value." });
+// //   }
+// // });
 
-    } catch (error) {
-        console.error(error.message)
-        res.send("Server Error")
+// // router.post('/login', [
+// //   body('email').isEmail(),
+// //   body('password').exists(),
+// // ], async (req, res) => {
+// //   let success = false;
+// //   const errors = validationResult(req);
+// //   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    }
-})
-router.post('/foodData', async (req, res) => {
-    try {
-        // console.log( JSON.stringify(global.foodData))
-        // const userId = req.user.id;
-        // await database.listCollections({name:"food_items"}).find({});
-        res.send([global.foodData, global.foodCategory])
-    } catch (error) {
-        console.error(error.message)
-        res.send("Server Error")
+// //   const { email, password } = req.body;
+// //   try {
+// //     const user = await User.findOne({ email });
+// //     if (!user) return res.status(400).json({ success, error: "Invalid credentials" });
 
-    }
-})
+// //     const pwdCompare = await bcrypt.compare(password, user.password);
+// //     if (!pwdCompare) return res.status(400).json({ success, error: "Invalid credentials" });
 
-router.post('/orderData', async (req, res) => {
-    let data = req.body.order_data
-    await data.splice(0, 0, { Order_date: req.body.order_date })
-    console.log("1231242343242354", req.body.email)
+// //     const authToken = jwt.sign({ user: { id: user.id } }, jwtSecret);
+// //     success = true;
+// //     res.json({ success, authToken });
 
-    //if email not exisitng in db then create: else: InsertMany()
-    let eId = await Order.findOne({ 'email': req.body.email })
-    console.log(eId)
-    if (eId === null) {
-        try {
-            console.log(data)
-            console.log("1231242343242354", req.body.email)
-            await Order.create({
-                email: req.body.email,
-                order_data: [data]
-            }).then(() => {
-                res.json({ success: true })
-            })
-        } catch (error) {
-            console.log(error.message)
-            res.send("Server Error", error.message)
+// //   } catch (error) {
+// //     console.error(error.message);
+// //     res.status(500).send("Server Error");
+// //   }
+// // });
 
-        }
-    }
+// // router.post('/getuser', fetch, async (req, res) => {
+// //   try {
+// //     const user = await User.findById(req.user.id).select("-password");
+// //     res.json(user);
+// //   } catch (error) {
+// //     console.error(error.message);
+// //     res.status(500).send("Server Error");
+// //   }
+// // });
 
-    else {
-        try {
-            await Order.findOneAndUpdate({ email: req.body.email },
-                { $push: { order_data: data } }).then(() => {
-                    res.json({ success: true })
-                })
-        } catch (error) {
-            console.log(error.message)
-            res.send("Server Error", error.message)
-        }
-    }
-})
+// // router.post('/getlocation', async (req, res) => {
+// //   try {
+// //     const { lat, long } = req.body;
+// //     if (!lat || !long) return res.status(400).json({ error: "Latitude and Longitude required" });
 
-router.post('/myOrderData', async (req, res) => {
-    try {
-        console.log(req.body.email)
-        let eId = await Order.findOne({ 'email': req.body.email })
-        //console.log(eId)
-        res.json({ orderData: eId })
-    } catch (error) {
-        res.send("Error", error.message)
-    }
+// //     const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${long}&key=74c89b3be64946ac96d777d08b878d43`;
+// //     const response = await axios.get(url);
+
+// //     if (!response.data.results || response.data.results.length === 0)
+// //       return res.status(404).json({ error: "No location found" });
+
+// //     const { city = "", state = "", country = "" } = response.data.results[0].components;
+// //     res.json({ location: `${city}, ${state}, ${country}` });
+
+// //   } catch (error) {
+// //     console.error(error.message);
+// //     res.status(500).json({ error: "Server Error" });
+// //   }
+// // });
 
 
+// // router.post('/foodData', async (req, res) => {
+// //   try {
+// //     res.json([global.foodData, global.foodCategory]);
+// //   } catch (error) {
+// //     console.error(error.message);
+// //     res.status(500).send("Server Error");
+// //   }
+
+// //   // router.get('/foodData', async (req, res) => {
+// //   //   try{
+// //   //     const maxPrice=parseInt(req.query.maxPrice) || 1000;
+// //   //   const filter={price:{$lte:maxPrice}};
+// //   //   const foodItems=await FoodItem.find(filter);
+// //   //   res.json(foodItems);
+// //   //   }catch(error){
+// //   //     console.error(error.message);
+// //   //     res.status(500).send("Server Error")
+// //   //   }
+// // });
+
+// // router.post('/orderData', async (req, res) => {
+// //   const data = req.body.order_data;
+// //   data.splice(0, 0, { Order_date: req.body.order_date });
+
+// //   try {
+// //     const eId = await Order.findOne({ email: req.body.email });
+// //     if (!eId) {
+// //       await Order.create({ email: req.body.email, order_data: [data] });
+// //     } else {
+// //       await Order.findOneAndUpdate({ email: req.body.email }, { $push: { order_data: data } });
+// //     }
+// //     res.json({ success: true });
+// //   } catch (error) {
+// //     console.error(error.message);
+// //     res.status(500).send("Server Error");
+// //   }
+// // });
+
+// // router.post('/myOrderData', async (req, res) => {
+// //   try {
+// //     const eId = await Order.findOne({ email: req.body.email });
+// //     res.json({ orderData: eId });
+// //   } catch (error) {
+// //     console.error(error.message);
+// //     res.status(500).send("Server Error");
+// //   }
+// // });
+
+// // export default router;
+
+
+// import express from "express";
+// import User from "../models/User.js";
+// import { body, validationResult } from "express-validator";
+// import bcrypt from "bcryptjs";
+// import jwt from "jsonwebtoken";
+// import nodemailer from "nodemailer";
+
+// const router = express.Router();
+// const jwtSecret = "HaHa"; // Use env variable in production
+
+// // Nodemailer transporter
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: "2072anuragchauhan@gmail.com", // Your Gmail
+//     pass: "uxoxobbwehgzrinl",           // App Password
+//   },
+// });
+
+// // ------------------- CREATE USER -------------------
+// router.post(
+//   "/createuser",
+//   [
+//     body("email").isEmail(),
+//     body("password").isLength({ min: 8 }),
+//     body("name").isLength({ min: 3 }),
+//   ],
+//   async (req, res) => {
+//     let success = false;
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty())
+//       return res.status(400).json({ success, errors: errors.array() });
+
+//     try {
+//       // Check if user already exists
+//       const existingUser = await User.findOne({ email: req.body.email });
+//       if (existingUser)
+//         return res
+//           .status(400)
+//           .json({ success, error: "User with this email already exists." });
+
+//       // Hash password
+//       const salt = await bcrypt.genSalt(10);
+//       const securePass = await bcrypt.hash(req.body.password, salt);
+
+//       // Generate OTP
+//       const otp = Math.floor(100000 + Math.random() * 900000);
+
+//       // Create user with OTP
+//       const user = await User.create({
+//         name: req.body.name,
+//         password: securePass,
+//         email: req.body.email,
+//         location: req.body.location,
+//         isVerified: false,
+//         otp,
+//         otpExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
+//       });
+
+//       // Send OTP to the email entered by the user
+//       const mailOptions = {
+//         from: "2072anuragchauhan@gmail.com",
+//         to: req.body.email, // <-- This is the user's email
+//         subject: "Verify Your goFood Account",
+//         text: `Hello ${req.body.name},\n\nYour OTP for goFood account verification is: ${otp}\nThis OTP is valid for 10 minutes.\n\nThank you!`,
+//       };
+
+//       transporter.sendMail(mailOptions, (error, info) => {
+//         if (error) {
+//           console.error(error);
+//           return res
+//             .status(500)
+//             .json({ success: false, error: "Failed to send OTP email" });
+//         }
+//         console.log("OTP sent: " + info.response);
+//         success = true;
+//         res.json({ success, message: "OTP sent to your email" });
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ success: false, error: "Server Error" });
+//     }
+//   }
+// );
+
+// // ------------------- VERIFY OTP -------------------
+// router.post("/verify-otp", async (req, res) => {
+//   const { email, otp } = req.body;
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user)
+//       return res.status(400).json({ success: false, error: "User not found" });
+
+//     if (user.isVerified)
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "User already verified" });
+
+//     if (user.otp !== parseInt(otp))
+//       return res.status(400).json({ success: false, error: "Invalid OTP" });
+
+//     if (user.otpExpires < Date.now())
+//       return res.status(400).json({ success: false, error: "OTP expired" });
+
+//     user.isVerified = true;
+//     user.otp = null;
+//     user.otpExpires = null;
+//     await user.save();
+
+//     res.json({ success: true, message: "Email verified successfully!" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false, error: "Server Error" });
+//   }
+// });
+
+// // ------------------- LOGIN -------------------
+// router.post(
+//   "/login",
+//   [
+//     body("email").isEmail(),
+//     body("password").exists(),
+//   ],
+//   async (req, res) => {
+//     let success = false;
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+//     const { email, password } = req.body;
+//     try {
+//       const user = await User.findOne({ email });
+//       if (!user)
+//         return res.status(400).json({ success, error: "Invalid credentials" });
+
+//       const pwdCompare = await bcrypt.compare(password, user.password);
+//       if (!pwdCompare)
+//         return res.status(400).json({ success, error: "Invalid credentials" });
+
+//       if (!user.isVerified)
+//         return res
+//           .status(400)
+//           .json({ success, error: "Please verify your email before logging in." });
+
+//       const authToken = jwt.sign({ user: { id: user.id } }, jwtSecret);
+//       success = true;
+//       res.json({ success, authToken });
+//     } catch (error) {
+//       console.error(error.message);
+//       res.status(500).send("Server Error");
+//     }
+//   }
+// );
+
+// export default router;
+
+
+
+import express from "express";
+import User from "../models/User.js";
+import Order from "../models/Orders.js";
+import { body, validationResult } from "express-validator";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import axios from "axios";
+import nodemailer from "nodemailer";
+import fetch from "../middleware/fetchdetails.js";
+
+const router = express.Router();
+const jwtSecret = "HaHa"; // Use env variable in production
+
+// ------------------- Nodemailer -------------------
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "2072anuragchauhan@gmail.com", // Replace with your Gmail
+    pass: "uxoxobbwehgzrinl",           // Gmail app password
+  },
 });
 
-module.exports = router
+// ------------------- CREATE USER -------------------
+router.post(
+  "/createuser",
+  [
+    body("email").isEmail(),
+    body("password").isLength({ min: 8 }),
+    body("name").isLength({ min: 3 }),
+  ],
+  async (req, res) => {
+    let success = false;
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ success, errors: errors.array() });
+
+    try {
+      // Check if user already exists
+      const existingUser = await User.findOne({ email: req.body.email });
+      if (existingUser)
+        return res
+          .status(400)
+          .json({ success, error: "User with this email already exists." });
+
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const securePass = await bcrypt.hash(req.body.password, salt);
+
+      // Generate OTP
+      const otp = Math.floor(100000 + Math.random() * 900000);
+
+      // Create user with OTP
+      const user = await User.create({
+        name: req.body.name,
+        password: securePass,
+        email: req.body.email,
+        location: req.body.location,
+        isVerified: false,
+        otp,
+        otpExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
+      });
+
+      // Send OTP to the user's email
+      const mailOptions = {
+        from: "2072anuragchauhan@gmail.com",
+        to: req.body.email,
+        subject: "Verify Your goFood Account",
+        text: `Hello ${req.body.name},\n\nYour OTP for goFood account verification is: ${otp}\nThis OTP is valid for 10 minutes.\n\nThank you!`,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(error);
+          return res
+            .status(500)
+            .json({ success: false, error: "Failed to send OTP email" });
+        }
+        console.log("OTP sent: " + info.response);
+        success = true;
+        res.json({ success, message: "OTP sent to your email" });
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, error: "Server Error" });
+    }
+  }
+);
+
+// ------------------- VERIFY OTP -------------------
+router.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ success: false, error: "User not found" });
+
+    if (user.isVerified)
+      return res
+        .status(400)
+        .json({ success: false, error: "User already verified" });
+
+    if (user.otp !== parseInt(otp))
+      return res.status(400).json({ success: false, error: "Invalid OTP" });
+
+    if (user.otpExpires < Date.now())
+      return res.status(400).json({ success: false, error: "OTP expired" });
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    res.json({ success: true, message: "Email verified successfully!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
+});
+
+// ------------------- LOGIN -------------------
+router.post(
+  "/login",
+  [body("email").isEmail(), body("password").exists()],
+  async (req, res) => {
+    let success = false;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { email, password } = req.body;
+    try {
+      const user = await User.findOne({ email });
+      if (!user)
+        return res.status(400).json({ success, error: "Invalid credentials" });
+
+      const pwdCompare = await bcrypt.compare(password, user.password);
+      if (!pwdCompare)
+        return res.status(400).json({ success, error: "Invalid credentials" });
+
+      if (!user.isVerified)
+        return res
+          .status(400)
+          .json({ success, error: "Please verify your email before logging in." });
+
+      const authToken = jwt.sign({ user: { id: user.id } }, jwtSecret);
+      success = true;
+      res.json({ success, authToken });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
+
+// ------------------- GET USER DETAILS -------------------
+router.post("/getuser", fetch, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// ------------------- GET LOCATION -------------------
+router.post("/getlocation", async (req, res) => {
+  try {
+    const { lat, long } = req.body;
+    if (!lat || !long) return res.status(400).json({ error: "Latitude and Longitude required" });
+
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${long}&key=74c89b3be64946ac96d777d08b878d43`;
+    const response = await axios.get(url);
+
+    if (!response.data.results || response.data.results.length === 0)
+      return res.status(404).json({ error: "No location found" });
+
+    const { city = "", state = "", country = "" } = response.data.results[0].components;
+    res.json({ location: `${city}, ${state}, ${country}` });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
+
+// ------------------- FOOD DATA -------------------
+// Initialize some sample food items globally
+if (!global.foodData) {
+  global.foodData = [
+    { id: 1, name: "Pizza", category: "Fast Food", price: 250, img: "https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg" },
+    { id: 2, name: "Burger", category: "Fast Food", price: 150, img: "https://images.pexels.com/photos/1639566/pexels-photo-1639566.jpeg" },
+    { id: 3, name: "Cake", category: "Dessert", price: 300, img: "https://images.pexels.com/photos/302680/pexels-photo-302680.jpeg" },
+  ];
+}
+
+if (!global.foodCategory) {
+  global.foodCategory = ["Fast Food", "Dessert", "Beverages"];
+}
+
+router.post("/foodData", async (req, res) => {
+  try {
+    res.json([global.foodData, global.foodCategory]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// ------------------- ORDER DATA -------------------
+router.post("/orderData", async (req, res) => {
+  const data = req.body.order_data;
+  data.splice(0, 0, { Order_date: req.body.order_date });
+
+  try {
+    const eId = await Order.findOne({ email: req.body.email });
+    if (!eId) {
+      await Order.create({ email: req.body.email, order_data: [data] });
+    } else {
+      await Order.findOneAndUpdate({ email: req.body.email }, { $push: { order_data: data } });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// ------------------- MY ORDER DATA -------------------
+router.post("/myOrderData", async (req, res) => {
+  try {
+    const eId = await Order.findOne({ email: req.body.email });
+    res.json({ orderData: eId });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+export default router;

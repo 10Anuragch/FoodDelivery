@@ -1,37 +1,35 @@
+
 import './App.css';
-import '../node_modules/bootstrap-dark-5/dist/css/bootstrap-dark.min.css'  //npm i bootstrap-dark-5 boostrap
-import '../node_modules/bootstrap/dist/js/bootstrap.bundle';
-import "../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import '../node_modules/bootstrap-dark-5/dist/css/bootstrap-dark.min.css';
 
 import Home from './screens/Home';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route
-} from "react-router-dom";
-// import Navbar from './components/Navbar';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
-import { CartProvider } from './components/ContextReducer';
 import MyOrder from './screens/MyOrder';
+import VerifyOTP from './screens/VerifyOTP';
+import AdminDashboard from './components/Admin/AdminDashboard';
 
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { CartProvider } from './components/ContextReducer';
 
 function App() {
   return (
     <CartProvider>
       <Router>
-        <div>
-          <Routes>
-            <Route exact path="/" element={<Home />} />
-            <Route exact path="/login" element={<Login />} />
-            <Route exact path="/signup" element={<Signup />} />
-            <Route exact path="/myorder" element={<MyOrder />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/myorder" element={<MyOrder />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
+
+        </Routes>
       </Router>
     </CartProvider>
   );
 }
 
 export default App;
-
