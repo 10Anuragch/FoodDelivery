@@ -3,7 +3,7 @@
 .admin-dashboard {
   display: flex;
   min-height: 100vh;
-  background-color: #0f1724;
+  background-color: #154899;
   color: #e6eef8;
   font-family: Arial, sans-serif;
 }
@@ -11,7 +11,7 @@
 
 .admin-nav {
   width: 220px;
-  background-color: #1e293b;
+  background-color: #2358ad;
   padding: 20px;
   box-shadow: 2px 0 6px rgba(0,0,0,0.3);
   flex-shrink: 0;
@@ -37,7 +37,7 @@
 }
 
 .admin-nav ul li a:hover {
-  background-color: black;
+  background-color: rgb(9, 1, 1);
 }
 
 
@@ -51,8 +51,8 @@
 .admin-content table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  color: #e6eef8;
+  background-color: rgb(220, 24, 37);
+  color: #dee0e2;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -60,7 +60,7 @@
 .admin-content th,
 .admin-content td {
   padding: 12px 15px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(211, 45, 45, 0.1);
   text-align: left;
 }
 
