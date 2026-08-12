@@ -4,8 +4,6 @@ A full-stack food delivery web application built with the **MERN stack**. I buil
 
 The application allows users to create an account, verify their email, browse food items, add items to their cart, place orders, and view their previous orders. It also includes an admin section for managing users and orders.
 
-> This project is actively being improved. More features and production-ready improvements will be added over time.
-
 ---
 
 ## Features
